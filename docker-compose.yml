@@ -9,10 +9,10 @@ services:
     volumes:
       - ./:/app
     ports:
-      - "${PORT:-8888}:8888"  # Dùng biến môi trường hoặc mặc định là 8888
+      - "${PORT:-8888}:8888" 
     environment:
       - FIBER_ENV=production
-      - PORT=${PORT:-8888}  # Sử dụng biến môi trường từ file .env
-    command: ["air", "-c", ".air/.air.toml"]  # Dùng Air để chạy ứng dụng
+      - PORT=${PORT:-8888}  
+    command: ["air", "-c", ".air/.air.toml"] 
     env_file:
-      - .env  # Load các biến từ file .env
+      - .env

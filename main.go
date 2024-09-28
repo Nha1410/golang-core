@@ -18,7 +18,7 @@ func main() {
 	app := fiber.New()
 
 	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, Fiber!")
+		return c.SendString("Hello, Fiber1!")
 	})
 
 	log.Fatal(app.Listen(fmt.Sprintf(":%s", port)))
