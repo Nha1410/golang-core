@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"golang-docker-demo/app/server"
+	"golang-docker-demo/app/server/generated"
 	"log"
 	"os"
 
@@ -17,9 +19,12 @@ func main() {
 
 	app := fiber.New()
 
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, Fiber1!")
-	})
+	api := server.NewApi()
+	generated.RegisterHandlers(app, api)
+
+	//app.Get("/", func(c *fiber.Ctx) error {
+	//	return c.SendString("Hello, Fiber1!")
+	//})
 
 	log.Fatal(app.Listen(fmt.Sprintf(":%s", port)))
 }

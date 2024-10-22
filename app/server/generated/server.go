@@ -4,14 +4,27 @@
 package generated
 
 import (
+	"fmt"
+	"net/url"
+
 	"github.com/gofiber/fiber/v2"
+	"github.com/oapi-codegen/runtime"
 )
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
-	// Get a list of users
-	// (GET /users)
-	GetUsers(c *fiber.Ctx) error
+	// Returns all pets
+	// (GET /pets)
+	FindPets(c *fiber.Ctx, params FindPetsParams) error
+	// Creates a new pet
+	// (POST /pets)
+	AddPet(c *fiber.Ctx) error
+	// Deletes a pet by ID
+	// (DELETE /pets/{id})
+	DeletePet(c *fiber.Ctx, id int64) error
+	// Returns a pet by ID
+	// (GET /pets/{id})
+	FindPetByID(c *fiber.Ctx, id int64) error
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -21,10 +34,73 @@ type ServerInterfaceWrapper struct {
 
 type MiddlewareFunc fiber.Handler
 
-// GetUsers operation middleware
-func (siw *ServerInterfaceWrapper) GetUsers(c *fiber.Ctx) error {
+// FindPets operation middleware
+func (siw *ServerInterfaceWrapper) FindPets(c *fiber.Ctx) error {
 
-	return siw.Handler.GetUsers(c)
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params FindPetsParams
+
+	var query url.Values
+	query, err = url.ParseQuery(string(c.Request().URI().QueryString()))
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for query string: %w", err).Error())
+	}
+
+	// ------------- Optional query parameter "tags" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "tags", query, &params.Tags)
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter tags: %w", err).Error())
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "limit", query, &params.Limit)
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter limit: %w", err).Error())
+	}
+
+	return siw.Handler.FindPets(c, params)
+}
+
+// AddPet operation middleware
+func (siw *ServerInterfaceWrapper) AddPet(c *fiber.Ctx) error {
+
+	return siw.Handler.AddPet(c)
+}
+
+// DeletePet operation middleware
+func (siw *ServerInterfaceWrapper) DeletePet(c *fiber.Ctx) error {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id int64
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Params("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter id: %w", err).Error())
+	}
+
+	return siw.Handler.DeletePet(c, id)
+}
+
+// FindPetByID operation middleware
+func (siw *ServerInterfaceWrapper) FindPetByID(c *fiber.Ctx) error {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id int64
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Params("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter id: %w", err).Error())
+	}
+
+	return siw.Handler.FindPetByID(c, id)
 }
 
 // FiberServerOptions provides options for the Fiber server.
@@ -48,6 +124,12 @@ func RegisterHandlersWithOptions(router fiber.Router, si ServerInterface, option
 		router.Use(fiber.Handler(m))
 	}
 
-	router.Get(options.BaseURL+"/users", wrapper.GetUsers)
+	router.Get(options.BaseURL+"/pets", wrapper.FindPets)
+
+	router.Post(options.BaseURL+"/pets", wrapper.AddPet)
+
+	router.Delete(options.BaseURL+"/pets/:id", wrapper.DeletePet)
+
+	router.Get(options.BaseURL+"/pets/:id", wrapper.FindPetByID)
 
 }

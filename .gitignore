@@ -3,3 +3,4 @@
 .air/main
 docker/container_data/*
 .air/main
+.idea/
