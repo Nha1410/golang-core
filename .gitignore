@@ -1,3 +1,5 @@
 .DS_Store
 .env
 .air/main
+docker/container_data/*
+.air/main
