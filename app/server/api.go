@@ -1,6 +1,7 @@
 package server
 
 import (
+	"golang-docker-demo/app/modules/pet"
 	"golang-docker-demo/app/server/generated"
 
 	"github.com/gofiber/fiber/v2"
@@ -9,17 +10,15 @@ import (
 var _ generated.ServerInterface = (*Api)(nil)
 
 type Api struct {
+	pet pet.UseCaseInterface
 }
 
-func NewApi() *Api {
-	return &Api{}
+func NewApi(pet pet.UseCaseInterface) *Api {
+	return &Api{pet: pet}
 }
 
 func (a Api) FindPets(c *fiber.Ctx, params generated.FindPetsParams) error {
-	//TODO implement me
-	return c.Status(200).JSON(
-		"123",
-	)
+	return a.pet.FindPets(c, params)
 }
 
 func (a Api) AddPet(c *fiber.Ctx) error {
