@@ -1,7 +1,5 @@
-version: '3.8'
-
 services:
-  app:
+  fiber_app:
     build:
       context: .
       dockerfile: docker/Dockerfile
@@ -9,10 +7,31 @@ services:
     volumes:
       - ./:/app
     ports:
-      - "${PORT:-8888}:8888" 
+      - "${PORT:-8888}:8888"
     environment:
       - FIBER_ENV=production
-      - PORT=${PORT:-8888}  
-    command: ["air", "-c", ".air/.air.toml"] 
+      - PORT=${PORT:-8888}
+    command: ["air", "-c", ".air/.air.toml"]
     env_file:
       - .env
+    depends_on:
+      - fiber_postgres
+    networks:
+      - fiber_service
+
+  fiber_postgres:
+    image: postgres:17
+    container_name: fiber_postgres
+    command: ["postgres", "-c", "log_statement=all"]
+    volumes:
+      - ./docker/container_data/pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env
+    networks:
+      - fiber_service
+
+networks:
+  fiber_service:
+    driver: bridge
