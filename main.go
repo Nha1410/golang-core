@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"golang-docker-demo/app/modules/pet"
 	"golang-docker-demo/app/server"
+	"golang-docker-demo/app/server/generated"
 	"golang-docker-demo/config"
+	"golang-docker-demo/db"
+	"golang-docker-demo/db/generated/query"
 	"log"
 	"os"
 
@@ -19,14 +22,19 @@ func main() {
 	}
 
 	app := fiber.New()
-	configConfig := config.NewConfig()
-	api := server.NewApi(pet.NewUseCase())
-	db := db.
-		generated.RegisterHandlers(app, api)
+	config := config.NewConfig()
+	log.Println(config)
+	db := db.NewLocalDb(config.DB)
+	fmt.Println(db)
+
+	query := query.Use(db)
+	api := server.NewApi(pet.NewUseCase(query))
+	generated.RegisterHandlers(app, api)
 
 	//app.Get("/", func(c *fiber.Ctx) error {
 	//	return c.SendString("Hello, Fiber1!")
 	//})
 
+	log.Printf("Staring Server")
 	log.Fatal(app.Listen(fmt.Sprintf(":%s", port)))
 }
