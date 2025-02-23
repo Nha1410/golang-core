@@ -11,7 +11,7 @@ COPY . /app
 
 COPY .env /app/.env
 
-ENV PORT=${PORT}
+# ENV PORT=${PORT}
 
 COPY .air/.air.toml /app/.air/.air.toml
 

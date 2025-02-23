@@ -4,3 +4,5 @@
 docker/container_data/*
 .air/main
 .idea/
+.air/build-errors.log
+.air/main

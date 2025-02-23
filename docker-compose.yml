@@ -1,7 +1,5 @@
-version: '3.8'
-
 services:
-  app:
+  fiber_app:
     build:
       context: .
       dockerfile: docker/Dockerfile
@@ -17,13 +15,14 @@ services:
     env_file:
       - .env
     depends_on:
-      - postgres
+      - fiber_postgres
     networks:
       - fiber_service
 
-  postgres:
-    image: postgres:latest
+  fiber_postgres:
+    image: postgres:17
     container_name: fiber_postgres
+    command: ["postgres", "-c", "log_statement=all"]
     volumes:
       - ./docker/container_data/pgdata:/var/lib/postgresql/data
     ports:

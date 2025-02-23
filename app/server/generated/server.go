@@ -13,18 +13,66 @@ import (
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
-	// Returns all pets
-	// (GET /pets)
-	FindPets(c *fiber.Ctx, params FindPetsParams) error
-	// Creates a new pet
-	// (POST /pets)
+	// Add a new pet to the store
+	// (POST /pet)
 	AddPet(c *fiber.Ctx) error
-	// Deletes a pet by ID
-	// (DELETE /pets/{id})
-	DeletePet(c *fiber.Ctx, id int64) error
-	// Returns a pet by ID
-	// (GET /pets/{id})
-	FindPetByID(c *fiber.Ctx, id int64) error
+	// Update an existing pet
+	// (PUT /pet)
+	UpdatePet(c *fiber.Ctx) error
+	// Finds Pets by status
+	// (GET /pet/findByStatus)
+	FindPetsByStatus(c *fiber.Ctx, params FindPetsByStatusParams) error
+	// Finds Pets by tags
+	// (GET /pet/findByTags)
+	FindPetsByTags(c *fiber.Ctx, params FindPetsByTagsParams) error
+	// Deletes a pet
+	// (DELETE /pet/{petId})
+	DeletePet(c *fiber.Ctx, petId int64) error
+	// Find pet by ID
+	// (GET /pet/{petId})
+	GetPetById(c *fiber.Ctx, petId int64) error
+	// Updates a pet in the store with form data
+	// (POST /pet/{petId})
+	UpdatePetWithForm(c *fiber.Ctx, petId int64) error
+	// uploads an image
+	// (POST /pet/{petId}/uploadImage)
+	UploadFile(c *fiber.Ctx, petId int64) error
+	// Returns pet inventories by status
+	// (GET /store/inventory)
+	GetInventory(c *fiber.Ctx) error
+	// Place an order for a pet
+	// (POST /store/order)
+	PlaceOrder(c *fiber.Ctx) error
+	// Delete purchase order by ID
+	// (DELETE /store/order/{orderId})
+	DeleteOrder(c *fiber.Ctx, orderId int64) error
+	// Find purchase order by ID
+	// (GET /store/order/{orderId})
+	GetOrderById(c *fiber.Ctx, orderId int64) error
+	// Create user
+	// (POST /user)
+	CreateUser(c *fiber.Ctx) error
+	// Creates list of users with given input array
+	// (POST /user/createWithArray)
+	CreateUsersWithArrayInput(c *fiber.Ctx) error
+	// Creates list of users with given input array
+	// (POST /user/createWithList)
+	CreateUsersWithListInput(c *fiber.Ctx) error
+	// Logs user into the system
+	// (GET /user/login)
+	LoginUser(c *fiber.Ctx, params LoginUserParams) error
+	// Logs out current logged in user session
+	// (GET /user/logout)
+	LogoutUser(c *fiber.Ctx) error
+	// Delete user
+	// (DELETE /user/{username})
+	DeleteUser(c *fiber.Ctx, username string) error
+	// Get user by user name
+	// (GET /user/{username})
+	GetUserByName(c *fiber.Ctx, username string) error
+	// Updated user
+	// (PUT /user/{username})
+	UpdateUser(c *fiber.Ctx, username string) error
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -34,13 +82,31 @@ type ServerInterfaceWrapper struct {
 
 type MiddlewareFunc fiber.Handler
 
-// FindPets operation middleware
-func (siw *ServerInterfaceWrapper) FindPets(c *fiber.Ctx) error {
+// AddPet operation middleware
+func (siw *ServerInterfaceWrapper) AddPet(c *fiber.Ctx) error {
+
+	c.Context().SetUserValue(Petstore_authScopes, []string{"write:pets", "read:pets"})
+
+	return siw.Handler.AddPet(c)
+}
+
+// UpdatePet operation middleware
+func (siw *ServerInterfaceWrapper) UpdatePet(c *fiber.Ctx) error {
+
+	c.Context().SetUserValue(Petstore_authScopes, []string{"write:pets", "read:pets"})
+
+	return siw.Handler.UpdatePet(c)
+}
+
+// FindPetsByStatus operation middleware
+func (siw *ServerInterfaceWrapper) FindPetsByStatus(c *fiber.Ctx) error {
 
 	var err error
 
+	c.Context().SetUserValue(Petstore_authScopes, []string{"write:pets", "read:pets"})
+
 	// Parameter object where we will unmarshal all parameters from the context
-	var params FindPetsParams
+	var params FindPetsByStatusParams
 
 	var query url.Values
 	query, err = url.ParseQuery(string(c.Request().URI().QueryString()))
@@ -48,27 +114,56 @@ func (siw *ServerInterfaceWrapper) FindPets(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for query string: %w", err).Error())
 	}
 
-	// ------------- Optional query parameter "tags" -------------
+	// ------------- Required query parameter "status" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "tags", query, &params.Tags)
+	if paramValue := c.Query("status"); paramValue != "" {
+
+	} else {
+		err = fmt.Errorf("Query argument status is required, but not found")
+		c.Status(fiber.StatusBadRequest).JSON(err)
+		return err
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "status", query, &params.Status)
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter status: %w", err).Error())
+	}
+
+	return siw.Handler.FindPetsByStatus(c, params)
+}
+
+// FindPetsByTags operation middleware
+func (siw *ServerInterfaceWrapper) FindPetsByTags(c *fiber.Ctx) error {
+
+	var err error
+
+	c.Context().SetUserValue(Petstore_authScopes, []string{"write:pets", "read:pets"})
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params FindPetsByTagsParams
+
+	var query url.Values
+	query, err = url.ParseQuery(string(c.Request().URI().QueryString()))
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for query string: %w", err).Error())
+	}
+
+	// ------------- Required query parameter "tags" -------------
+
+	if paramValue := c.Query("tags"); paramValue != "" {
+
+	} else {
+		err = fmt.Errorf("Query argument tags is required, but not found")
+		c.Status(fiber.StatusBadRequest).JSON(err)
+		return err
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "tags", query, &params.Tags)
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter tags: %w", err).Error())
 	}
 
-	// ------------- Optional query parameter "limit" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "limit", query, &params.Limit)
-	if err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter limit: %w", err).Error())
-	}
-
-	return siw.Handler.FindPets(c, params)
-}
-
-// AddPet operation middleware
-func (siw *ServerInterfaceWrapper) AddPet(c *fiber.Ctx) error {
-
-	return siw.Handler.AddPet(c)
+	return siw.Handler.FindPetsByTags(c, params)
 }
 
 // DeletePet operation middleware
@@ -76,31 +171,236 @@ func (siw *ServerInterfaceWrapper) DeletePet(c *fiber.Ctx) error {
 
 	var err error
 
-	// ------------- Path parameter "id" -------------
-	var id int64
+	// ------------- Path parameter "petId" -------------
+	var petId int64
 
-	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Params("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	err = runtime.BindStyledParameterWithOptions("simple", "petId", c.Params("petId"), &petId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
 	if err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter id: %w", err).Error())
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter petId: %w", err).Error())
 	}
 
-	return siw.Handler.DeletePet(c, id)
+	c.Context().SetUserValue(Petstore_authScopes, []string{"write:pets", "read:pets"})
+
+	return siw.Handler.DeletePet(c, petId)
 }
 
-// FindPetByID operation middleware
-func (siw *ServerInterfaceWrapper) FindPetByID(c *fiber.Ctx) error {
+// GetPetById operation middleware
+func (siw *ServerInterfaceWrapper) GetPetById(c *fiber.Ctx) error {
 
 	var err error
 
-	// ------------- Path parameter "id" -------------
-	var id int64
+	// ------------- Path parameter "petId" -------------
+	var petId int64
 
-	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Params("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	err = runtime.BindStyledParameterWithOptions("simple", "petId", c.Params("petId"), &petId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
 	if err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter id: %w", err).Error())
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter petId: %w", err).Error())
 	}
 
-	return siw.Handler.FindPetByID(c, id)
+	c.Context().SetUserValue(Api_keyScopes, []string{})
+
+	return siw.Handler.GetPetById(c, petId)
+}
+
+// UpdatePetWithForm operation middleware
+func (siw *ServerInterfaceWrapper) UpdatePetWithForm(c *fiber.Ctx) error {
+
+	var err error
+
+	// ------------- Path parameter "petId" -------------
+	var petId int64
+
+	err = runtime.BindStyledParameterWithOptions("simple", "petId", c.Params("petId"), &petId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter petId: %w", err).Error())
+	}
+
+	c.Context().SetUserValue(Petstore_authScopes, []string{"write:pets", "read:pets"})
+
+	return siw.Handler.UpdatePetWithForm(c, petId)
+}
+
+// UploadFile operation middleware
+func (siw *ServerInterfaceWrapper) UploadFile(c *fiber.Ctx) error {
+
+	var err error
+
+	// ------------- Path parameter "petId" -------------
+	var petId int64
+
+	err = runtime.BindStyledParameterWithOptions("simple", "petId", c.Params("petId"), &petId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter petId: %w", err).Error())
+	}
+
+	c.Context().SetUserValue(Petstore_authScopes, []string{"write:pets", "read:pets"})
+
+	return siw.Handler.UploadFile(c, petId)
+}
+
+// GetInventory operation middleware
+func (siw *ServerInterfaceWrapper) GetInventory(c *fiber.Ctx) error {
+
+	c.Context().SetUserValue(Api_keyScopes, []string{})
+
+	return siw.Handler.GetInventory(c)
+}
+
+// PlaceOrder operation middleware
+func (siw *ServerInterfaceWrapper) PlaceOrder(c *fiber.Ctx) error {
+
+	return siw.Handler.PlaceOrder(c)
+}
+
+// DeleteOrder operation middleware
+func (siw *ServerInterfaceWrapper) DeleteOrder(c *fiber.Ctx) error {
+
+	var err error
+
+	// ------------- Path parameter "orderId" -------------
+	var orderId int64
+
+	err = runtime.BindStyledParameterWithOptions("simple", "orderId", c.Params("orderId"), &orderId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter orderId: %w", err).Error())
+	}
+
+	return siw.Handler.DeleteOrder(c, orderId)
+}
+
+// GetOrderById operation middleware
+func (siw *ServerInterfaceWrapper) GetOrderById(c *fiber.Ctx) error {
+
+	var err error
+
+	// ------------- Path parameter "orderId" -------------
+	var orderId int64
+
+	err = runtime.BindStyledParameterWithOptions("simple", "orderId", c.Params("orderId"), &orderId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter orderId: %w", err).Error())
+	}
+
+	return siw.Handler.GetOrderById(c, orderId)
+}
+
+// CreateUser operation middleware
+func (siw *ServerInterfaceWrapper) CreateUser(c *fiber.Ctx) error {
+
+	return siw.Handler.CreateUser(c)
+}
+
+// CreateUsersWithArrayInput operation middleware
+func (siw *ServerInterfaceWrapper) CreateUsersWithArrayInput(c *fiber.Ctx) error {
+
+	return siw.Handler.CreateUsersWithArrayInput(c)
+}
+
+// CreateUsersWithListInput operation middleware
+func (siw *ServerInterfaceWrapper) CreateUsersWithListInput(c *fiber.Ctx) error {
+
+	return siw.Handler.CreateUsersWithListInput(c)
+}
+
+// LoginUser operation middleware
+func (siw *ServerInterfaceWrapper) LoginUser(c *fiber.Ctx) error {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params LoginUserParams
+
+	var query url.Values
+	query, err = url.ParseQuery(string(c.Request().URI().QueryString()))
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for query string: %w", err).Error())
+	}
+
+	// ------------- Required query parameter "username" -------------
+
+	if paramValue := c.Query("username"); paramValue != "" {
+
+	} else {
+		err = fmt.Errorf("Query argument username is required, but not found")
+		c.Status(fiber.StatusBadRequest).JSON(err)
+		return err
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "username", query, &params.Username)
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter username: %w", err).Error())
+	}
+
+	// ------------- Required query parameter "password" -------------
+
+	if paramValue := c.Query("password"); paramValue != "" {
+
+	} else {
+		err = fmt.Errorf("Query argument password is required, but not found")
+		c.Status(fiber.StatusBadRequest).JSON(err)
+		return err
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "password", query, &params.Password)
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter password: %w", err).Error())
+	}
+
+	return siw.Handler.LoginUser(c, params)
+}
+
+// LogoutUser operation middleware
+func (siw *ServerInterfaceWrapper) LogoutUser(c *fiber.Ctx) error {
+
+	return siw.Handler.LogoutUser(c)
+}
+
+// DeleteUser operation middleware
+func (siw *ServerInterfaceWrapper) DeleteUser(c *fiber.Ctx) error {
+
+	var err error
+
+	// ------------- Path parameter "username" -------------
+	var username string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "username", c.Params("username"), &username, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter username: %w", err).Error())
+	}
+
+	return siw.Handler.DeleteUser(c, username)
+}
+
+// GetUserByName operation middleware
+func (siw *ServerInterfaceWrapper) GetUserByName(c *fiber.Ctx) error {
+
+	var err error
+
+	// ------------- Path parameter "username" -------------
+	var username string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "username", c.Params("username"), &username, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter username: %w", err).Error())
+	}
+
+	return siw.Handler.GetUserByName(c, username)
+}
+
+// UpdateUser operation middleware
+func (siw *ServerInterfaceWrapper) UpdateUser(c *fiber.Ctx) error {
+
+	var err error
+
+	// ------------- Path parameter "username" -------------
+	var username string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "username", c.Params("username"), &username, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter username: %w", err).Error())
+	}
+
+	return siw.Handler.UpdateUser(c, username)
 }
 
 // FiberServerOptions provides options for the Fiber server.
@@ -124,12 +424,44 @@ func RegisterHandlersWithOptions(router fiber.Router, si ServerInterface, option
 		router.Use(fiber.Handler(m))
 	}
 
-	router.Get(options.BaseURL+"/pets", wrapper.FindPets)
+	router.Post(options.BaseURL+"/pet", wrapper.AddPet)
 
-	router.Post(options.BaseURL+"/pets", wrapper.AddPet)
+	router.Put(options.BaseURL+"/pet", wrapper.UpdatePet)
 
-	router.Delete(options.BaseURL+"/pets/:id", wrapper.DeletePet)
+	router.Get(options.BaseURL+"/pet/findByStatus", wrapper.FindPetsByStatus)
 
-	router.Get(options.BaseURL+"/pets/:id", wrapper.FindPetByID)
+	router.Get(options.BaseURL+"/pet/findByTags", wrapper.FindPetsByTags)
+
+	router.Delete(options.BaseURL+"/pet/:petId", wrapper.DeletePet)
+
+	router.Get(options.BaseURL+"/pet/:petId", wrapper.GetPetById)
+
+	router.Post(options.BaseURL+"/pet/:petId", wrapper.UpdatePetWithForm)
+
+	router.Post(options.BaseURL+"/pet/:petId/uploadImage", wrapper.UploadFile)
+
+	router.Get(options.BaseURL+"/store/inventory", wrapper.GetInventory)
+
+	router.Post(options.BaseURL+"/store/order", wrapper.PlaceOrder)
+
+	router.Delete(options.BaseURL+"/store/order/:orderId", wrapper.DeleteOrder)
+
+	router.Get(options.BaseURL+"/store/order/:orderId", wrapper.GetOrderById)
+
+	router.Post(options.BaseURL+"/user", wrapper.CreateUser)
+
+	router.Post(options.BaseURL+"/user/createWithArray", wrapper.CreateUsersWithArrayInput)
+
+	router.Post(options.BaseURL+"/user/createWithList", wrapper.CreateUsersWithListInput)
+
+	router.Get(options.BaseURL+"/user/login", wrapper.LoginUser)
+
+	router.Get(options.BaseURL+"/user/logout", wrapper.LogoutUser)
+
+	router.Delete(options.BaseURL+"/user/:username", wrapper.DeleteUser)
+
+	router.Get(options.BaseURL+"/user/:username", wrapper.GetUserByName)
+
+	router.Put(options.BaseURL+"/user/:username", wrapper.UpdateUser)
 
 }
