@@ -12,9 +12,10 @@ const TableNameMPet = "m__pets"
 
 // MPet mapped from table <m__pets>
 type MPet struct {
-	ID          string     `gorm:"column:id;type:uuid;primaryKey" json:"id"`
+	ID          *string    `gorm:"column:id;type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
 	Name        string     `gorm:"column:name;type:text;not null" json:"name"`
 	Age         int32      `gorm:"column:age;type:integer;not null" json:"age"`
+	Status      string     `gorm:"column:status;type:text;not null" json:"status"`
 	CreatedAt   *time.Time `gorm:"column:created_at;type:timestamp without time zone;not null;default:now()" json:"created_at"`
 	UpdatedAt   *time.Time `gorm:"column:updated_at;type:timestamp without time zone;not null;default:now()" json:"updated_at"`
 	CreatedBy   string     `gorm:"column:created_by;type:uuid;not null" json:"created_by"`

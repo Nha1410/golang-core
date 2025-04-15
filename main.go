@@ -28,7 +28,9 @@ func main() {
 	fmt.Println(db)
 
 	query := query.Use(db)
-	api := server.NewApi(pet.NewUseCase(query))
+	petRepo := pet.NewRepository()
+	petUseCase := pet.NewUseCase(query, petRepo)
+	api := server.NewApi(petUseCase)
 	generated.RegisterHandlers(app, api)
 
 	//app.Get("/", func(c *fiber.Ctx) error {

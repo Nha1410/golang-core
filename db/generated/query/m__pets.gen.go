@@ -30,6 +30,7 @@ func newMPet(db *gorm.DB, opts ...gen.DOOption) mPet {
 	_mPet.ID = field.NewString(tableName, "id")
 	_mPet.Name = field.NewString(tableName, "name")
 	_mPet.Age = field.NewInt32(tableName, "age")
+	_mPet.Status = field.NewString(tableName, "status")
 	_mPet.CreatedAt = field.NewTime(tableName, "created_at")
 	_mPet.UpdatedAt = field.NewTime(tableName, "updated_at")
 	_mPet.CreatedBy = field.NewString(tableName, "created_by")
@@ -48,6 +49,7 @@ type mPet struct {
 	ID          field.String
 	Name        field.String
 	Age         field.Int32
+	Status      field.String
 	CreatedAt   field.Time
 	UpdatedAt   field.Time
 	CreatedBy   field.String
@@ -72,6 +74,7 @@ func (m *mPet) updateTableName(table string) *mPet {
 	m.ID = field.NewString(table, "id")
 	m.Name = field.NewString(table, "name")
 	m.Age = field.NewInt32(table, "age")
+	m.Status = field.NewString(table, "status")
 	m.CreatedAt = field.NewTime(table, "created_at")
 	m.UpdatedAt = field.NewTime(table, "updated_at")
 	m.CreatedBy = field.NewString(table, "created_by")
@@ -93,10 +96,11 @@ func (m *mPet) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (m *mPet) fillFieldMap() {
-	m.fieldMap = make(map[string]field.Expr, 8)
+	m.fieldMap = make(map[string]field.Expr, 9)
 	m.fieldMap["id"] = m.ID
 	m.fieldMap["name"] = m.Name
 	m.fieldMap["age"] = m.Age
+	m.fieldMap["status"] = m.Status
 	m.fieldMap["created_at"] = m.CreatedAt
 	m.fieldMap["updated_at"] = m.UpdatedAt
 	m.fieldMap["created_by"] = m.CreatedBy

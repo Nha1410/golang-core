@@ -1,17 +1,15 @@
--- 必ず勤務する曜日
 -- * BackupToTempTable
-DROP TABLE if exists m__pets CASCADE;
+DROP TABLE IF EXISTS m__pets CASCADE;
 
--- * RestoreFromTempTable
 CREATE TABLE m__pets (
-  id uuid PRIMARY KEY,
-    name text NOT NULL,
-    age int NOT NULL,
-    created_at timestamp NOT NULL DEFAULT now(),
-    updated_at timestamp NOT NULL DEFAULT now()
-    created_by uuid NOT NULL,
-    updated_by uuid NOT NULL
-    lock_version int8 NOT NULL DEFAULT 0
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	"name" text NOT NULL,
+	age int4 NOT NULL,
+	status text NOT NULL,
+	created_at timestamp DEFAULT now() NOT NULL,
+	updated_at timestamp DEFAULT now() NOT NULL,
+	created_by uuid NOT NULL,
+	updated_by uuid NOT NULL,
+	lock_version int8 DEFAULT 0 NOT NULL,
+	CONSTRAINT m__pets_pkey PRIMARY KEY (id)
 );
-
-

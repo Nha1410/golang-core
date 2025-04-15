@@ -6,6 +6,7 @@ require (
 	github.com/getkin/kin-openapi v0.128.0
 	github.com/gofiber/fiber/v2 v2.52.4
 	github.com/oapi-codegen/runtime v1.1.1
+	github.com/samber/lo v1.49.1
 	gorm.io/driver/postgres v1.5.11
 	gorm.io/gen v0.3.26
 	gorm.io/gorm v1.25.12
@@ -36,7 +37,7 @@ require (
 	github.com/caarlos0/env v3.5.0+incompatible
 	github.com/go-openapi/jsonpointer v0.21.0 // indirect
 	github.com/go-openapi/swag v0.23.0 // indirect
-	github.com/google/uuid v1.6.0 // indirect
+	github.com/google/uuid v1.6.0
 	github.com/invopop/yaml v0.3.1 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/klauspost/compress v1.17.0 // indirect

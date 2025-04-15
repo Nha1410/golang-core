@@ -19,8 +19,7 @@ func (a Api) DeletePet(c *fiber.Ctx, petId int64) error {
 }
 
 func (a Api) AddPet(c *fiber.Ctx) error {
-	//TODO implement me
-	panic("implement me")
+	return a.pet.AddPet(c)
 }
 
 func (a Api) UpdatePet(c *fiber.Ctx) error {
