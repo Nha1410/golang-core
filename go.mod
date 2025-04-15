@@ -5,6 +5,7 @@ go 1.22.8
 require (
 	github.com/getkin/kin-openapi v0.128.0
 	github.com/gofiber/fiber/v2 v2.52.4
+	github.com/google/wire v0.6.0
 	github.com/oapi-codegen/runtime v1.1.1
 	github.com/samber/lo v1.49.1
 	gorm.io/driver/postgres v1.5.11

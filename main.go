@@ -1,42 +1,40 @@
 package main
 
 import (
-	"fmt"
-	"golang-docker-demo/app/modules/pet"
-	"golang-docker-demo/app/server"
-	"golang-docker-demo/app/server/generated"
 	"golang-docker-demo/config"
-	"golang-docker-demo/db"
-	"golang-docker-demo/db/generated/query"
 	"log"
 	"os"
 
 	"github.com/gofiber/fiber/v2"
 )
 
+type DevServer struct {
+	fiber *fiber.App
+	cfg   *config.Config
+	// api   *server.Api
+}
+
+// func NewDevServer(cfg *config.Config, api *server.Api, fiber *fiber.App) *DevServer {
+func NewDevServer(fiber *fiber.App, cfg *config.Config) *DevServer {
+	return &DevServer{
+		fiber: fiber,
+		cfg:   cfg,
+		// api:   api,
+	}
+}
+
 func main() {
-	// Đọc cổng từ biến môi trường, nếu không có thì dùng cổng mặc định là 3000
+	// Lấy PORT từ env
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8888"
 	}
 
-	app := fiber.New()
-	config := config.NewConfig()
-	log.Println(config)
-	db := db.NewLocalDb(config.DB)
-	fmt.Println(db)
+	// app, err := InitializeServer()
+	// if err != nil {
+	// 	log.Fatalf("failed to initialize server: %v", err)
+	// }
 
-	query := query.Use(db)
-	petRepo := pet.NewRepository()
-	petUseCase := pet.NewUseCase(query, petRepo)
-	api := server.NewApi(petUseCase)
-	generated.RegisterHandlers(app, api)
-
-	//app.Get("/", func(c *fiber.Ctx) error {
-	//	return c.SendString("Hello, Fiber1!")
-	//})
-
-	log.Printf("Staring Server")
-	log.Fatal(app.Listen(fmt.Sprintf(":%s", port)))
+	log.Printf("Starting server on port %s", port)
+	// log.Fatal(app.Listen(fmt.Sprintf(":%s", port)))
 }
