@@ -6,12 +6,15 @@ require (
 	github.com/getkin/kin-openapi v0.128.0
 	github.com/gofiber/fiber/v2 v2.52.4
 	github.com/google/wire v0.6.0
+	github.com/oapi-codegen/fiber-middleware v1.0.2
 	github.com/oapi-codegen/runtime v1.1.1
 	github.com/samber/lo v1.49.1
 	gorm.io/driver/postgres v1.5.11
 	gorm.io/gen v0.3.26
 	gorm.io/gorm v1.25.12
 )
+
+require github.com/gorilla/mux v1.8.1 // indirect
 
 require (
 	github.com/go-sql-driver/mysql v1.7.0 // indirect
@@ -48,7 +51,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
 	github.com/perimeterx/marshmallow v1.1.5 // indirect
-	github.com/rivo/uniseg v0.2.0 // indirect
+	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.51.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect

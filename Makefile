@@ -32,3 +32,11 @@ build:
 
 run:
 	docker-compose up
+
+.PHONY: wire
+wire:
+	$(INDEVBOX) wire ./app/...
+
+.PHONY: update
+update:
+	$(INDEVBOX) go get -u ./...
