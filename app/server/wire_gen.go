@@ -6,3 +6,21 @@
 
 package server
 
+import (
+	"golang-docker-demo/app/modules/pet"
+	"golang-docker-demo/config"
+	"golang-docker-demo/db"
+)
+
+// Injectors from wire.go:
+
+func Ready() *DevServer {
+	app := NewFiber()
+	configConfig := config.NewConfig()
+	query := db.NewLocalQuery(configConfig)
+	repositoryInterface := pet.NewRepository()
+	useCaseInterface := pet.NewUseCase(query, repositoryInterface)
+	api := NewApi(useCaseInterface)
+	devServer := NewDevServer(app, configConfig, api)
+	return devServer
+}

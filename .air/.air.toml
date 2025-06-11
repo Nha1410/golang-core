@@ -1,12 +1,20 @@
 # research/.air/.air.toml
 
-# Config file for air
+
+# Working directory
+# . or absolute path, please note that the directories following must be under root.
 root = "."
-tmp_dir = ".air"
+tmp_dir = ".air/tmp"
+
+
+# Just plain old shell command. You could use `make` as well.
+## USE for local
+
+# Config file for air
 [build]
-    cmd = "go build -o ./.air/main ." 
-    bin = "./.air/main"              
-    full_bin = "APP_ENV=dev ./.air/main"
+    cmd = "go build -tags local -o .air/tmp/api /app/cmd/api"
+    bin = "./.air/main"
+    full_bin = "APP_ENV=devAPP_USER=air exec .air/tmp/api"
     watch_dir = ["./"]
     exclude_dir = ["vendor", ".air"]
     include_ext = ["go", "tpl", "html"]
